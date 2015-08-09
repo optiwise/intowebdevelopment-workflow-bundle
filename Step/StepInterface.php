@@ -49,4 +49,9 @@ interface StepInterface
      * @return  string
      */
     public function getName();
+
+    /**
+     * @return  bool
+     */
+    public function hasNextSteps();
 }
