@@ -1,0 +1,22 @@
+{
+  "name": "intowebdevelopment/workflow-bundle",
+  "type": "symfony-bundle",
+  "keywords": ["Symfony2", "Workflow", "WorkflowBundle", "WorkflowEvent", "Event", "EventBased"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "IntoWebDevelopment",
+      "email": "info@intowebdevelopment.nl"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "IntoWebDevelopment\\Bundle\\WorkflowBundle\\": ""
+    }
+  },
+  "require": {
+    "php": ">=5.3.3",
+    "symfony/framework-bundle": "~2.7",
+    "doctrine/orm": "~2.2,>=2.2.3,<2.5"
+  }
+}

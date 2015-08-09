@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
+                                      http://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity name="IntoWebDevelopment\WorkflowBundle\Model\AbstractWorkflowEventLog"
+            table="intowebdevelopment_workfloweventlog">
+
+        <id name="id" type="integer" column="id">
+            <generator strategy="AUTO"/>
+        </id>
+
+        <field name="processName" column="process_name" type="string" length="255" />
+
+        <field name="stepName" column="step_name" type="string" length="255" />
+
+        <field name="successful" column="successful" type="boolean" />
+
+        <field name="eventDate" column="event_date" type="datetime" />
+
+        <one-to-many field="next" target-entity="IntoWebDevelopment\WorkflowBundle\Model\AbstractWorkflowEventLog" mapped-by="previous" />
+
+        <many-to-one field="previous" target-entity="IntoWebDevelopment\WorkflowBundle\Model\AbstractWorkflowEventLog" inversed-by="next">
+            <join-column name="previous_id" referenced-column-name="id" on-delete="SET NULL" />
+        </many-to-one>
+
+    </entity>
+</doctrine-mapping>
