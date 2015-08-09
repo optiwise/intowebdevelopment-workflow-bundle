@@ -8,6 +8,7 @@ use IntoWebDevelopment\WorkflowBundle\Event\StepEvent;
 use IntoWebDevelopment\WorkflowBundle\Event\ValidateStepEvent;
 use IntoWebDevelopment\WorkflowBundle\Events;
 use IntoWebDevelopment\WorkflowBundle\Exception\NotPossibleToMoveToNextStepException;
+use IntoWebDevelopment\WorkflowBundle\Exception\TooManyStepsPossibleException;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -48,18 +49,31 @@ class Flow implements FlowInterface
     }
 
     /**
+     * @return ProcessInterface
+     */
+    public function getProcess()
+    {
+        return $this->process;
+    }
+
+    /**
      * When no errors are found we are allowed to move to the next step.
      *
-     * @param   StepInterface        $nextStep
-     * @param   StepInterface|null   $currentStep
+     * @param   StepInterface|null          $nextStep
+     * @param   StepInterface|null          $currentStep
      * @throws  NotPossibleToMoveToNextStepException
      */
-    public function moveToNextStep(StepInterface $nextStep, StepInterface $currentStep = null)
+    public function moveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null)
     {
         $currentStep = $this->getCurrentStepFromProcess($currentStep);
 
         if (!$this->isPossibleToMoveToNextStep($currentStep)) {
             throw new NotPossibleToMoveToNextStepException("Please check with the 'isPossibleToMoveToNextStep' method whether moving to the next step is possible.");
+        }
+
+        // When the next step is not given try to determine the next possible step.
+        if (null === $nextStep) {
+            $nextStep = $this->getNextStepFromProcessWhenNull($currentStep);
         }
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_ALLOWED_TO_STEP, new StepEvent($currentStep, $nextStep, $this->process));
@@ -80,13 +94,18 @@ class Flow implements FlowInterface
     }
 
     /**
-     * @param   StepInterface        $nextStep
+     * @param   StepInterface|null   $nextStep
      * @param   StepInterface|null   $currentStep
      * @return  bool
      */
-    public function isPossibleToMoveToNextStep(StepInterface $nextStep, StepInterface $currentStep = null)
+    public function isPossibleToMoveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null)
     {
         $currentStep = $this->getCurrentStepFromProcess($currentStep);
+
+        // When the next step is not given try to determine the next possible step.
+        if (null === $nextStep) {
+            $nextStep = $this->getNextStepFromProcessWhenNull($currentStep);
+        }
 
         if (false === $this->process->getSteps()->containsKey($currentStep->getName()) || false === $this->process->getSteps()->containsKey($nextStep->getName())) {
             return false;
@@ -108,6 +127,25 @@ class Flow implements FlowInterface
         return $this->getCurrentStepFromProcess($currentStep)->validate();
     }
 
+    /**
+     * @param   StepInterface $currentStep
+     * @return  StepInterface
+     * @throws  TooManyStepsPossibleException
+     */
+    private function getNextStepFromProcessWhenNull(StepInterface $currentStep)
+    {
+        if ($currentStep->hasNextSteps() && count($currentStep->getNextSteps()) === 1) {
+            // Get the first item of the next steps.
+            return $currentStep->getNextSteps()[0];
+        }
+
+        throw new TooManyStepsPossibleException("It's not possible to automatically determine the next step because there is more than one option to choose from.");
+    }
+
+    /**
+     * @param   StepInterface|null $stepOverride
+     * @return  StepInterface|null
+     */
     private function getCurrentStepFromProcess(StepInterface $stepOverride = null)
     {
         if ($stepOverride === null) {

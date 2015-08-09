@@ -17,6 +17,11 @@ interface FlowInterface
     public function setProcess(ProcessInterface $process);
 
     /**
+     * @return ProcessInterface
+     */
+    public function getProcess();
+
+    /**
      * Get all the constraint validation messages.
      *
      * @param   StepInterface   $currentStep
