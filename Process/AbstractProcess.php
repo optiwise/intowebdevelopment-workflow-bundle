@@ -55,7 +55,7 @@ abstract class AbstractProcess implements ProcessInterface
     }
 
     /**
-     * @return  null|StepInterface
+     * @return  StepInterface|null
      */
     public function getCurrentStep()
     {
