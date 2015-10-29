@@ -12,7 +12,7 @@ class StepEvent extends Event
     protected $nextStep;
     protected $process;
 
-    public function __construct(StepInterface $currentStep, $nextStep, ProcessInterface $process)
+    public function __construct(StepInterface $currentStep, StepInterface $nextStep, ProcessInterface $process)
     {
         $this->currentStep = $currentStep;
         $this->nextStep = $nextStep;
