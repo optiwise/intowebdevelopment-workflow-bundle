@@ -12,5 +12,7 @@ class Events
 
     const PROCESS_FLOW_STEPPING_COMPLETED = 'workflow.step_completed';
 
-    const BEFORE_VALIDATE_STEP = 'workflow.validate_step';
+    const BEFORE_VALIDATE_NEXT_STEP = 'workflow.validate_next_step';
+
+    const BEFORE_VALIDATE_CURRENT_STEP = 'workflow.validate_current_step';
 }
