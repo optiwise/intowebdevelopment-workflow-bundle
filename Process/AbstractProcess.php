@@ -3,6 +3,7 @@
 namespace IntoWebDevelopment\WorkflowBundle\Process;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use IntoWebDevelopment\WorkflowBundle\Exception\StepNotFoundInStepCollectionException;
 use IntoWebDevelopment\WorkflowBundle\Exception\CurrentStepNotFoundInStepCollectionException;
 use IntoWebDevelopment\WorkflowBundle\Exception\StepCollectionIsEmptyException;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
@@ -64,6 +65,25 @@ abstract class AbstractProcess implements ProcessInterface
         }
 
         return $this->currentStep;
+    }
+
+    /**
+     * @param   string $name
+     * @throws  StepCollectionIsEmptyException
+     * @throws  StepNotFoundInStepCollectionException
+     * @return  StepInterface
+     */
+    public function getStepInstanceByName($name)
+    {
+        if (0 === $this->stepCollection->count()) {
+            throw new StepCollectionIsEmptyException("We did not find any steps. Please make sure the stepCollection is filled.");
+        }
+
+        if ($this->stepCollection->containsKey($name)) {
+            return $this->stepCollection->get($name);
+        }
+
+        throw new StepNotFoundInStepCollectionException(sprintf("The given step '%s' is not known in the step collection.", $name));
     }
 
     private function throwCurrentStepNotFoundException($currentStepName)
