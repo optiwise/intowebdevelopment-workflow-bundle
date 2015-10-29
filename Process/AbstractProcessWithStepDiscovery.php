@@ -18,6 +18,12 @@ abstract class AbstractProcessWithStepDiscovery extends AbstractProcess implemen
         return $this;
     }
 
+    /**
+     * Get all the steps.
+     * When there are no steps available set the start step.
+     *
+     * @return ArrayCollection
+     */
     public function getSteps()
     {
         if (0 === $this->stepCollection->count()) {
@@ -64,6 +70,12 @@ abstract class AbstractProcessWithStepDiscovery extends AbstractProcess implemen
         return $steps;
     }
 
+    /**
+     * Assign all the steps to the step collection
+     *
+     * @param   StepInterface $currentStep
+     * @return  $this
+     */
     private function setSteps(StepInterface $currentStep)
     {
         $this->stepCollection = $this->iterateDistinctlyOverSteps($currentStep);
