@@ -18,16 +18,30 @@ abstract class AbstractStep implements StepInterface
         return array();
     }
 
+    /**
+     * @return ConstraintViolationList
+     */
     public function validate()
     {
         return new ConstraintViolationList();
     }
 
+    /**
+     * Get the data.
+     *
+     * @return mixed
+     */
     public function getData()
     {
         return $this->data;
     }
 
+    /**
+     * Sets the data for the step
+     *
+     * @param mixed $data
+     * @return $this
+     */
     public function setData($data)
     {
         $this->data = $data;

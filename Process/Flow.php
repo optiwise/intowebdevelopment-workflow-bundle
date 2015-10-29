@@ -96,6 +96,7 @@ class Flow implements FlowInterface
     /**
      * @param   StepInterface|null   $nextStep
      * @param   StepInterface|null   $currentStep
+     * @throws  TooManyStepsPossibleException
      * @return  bool
      */
     public function isPossibleToMoveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null)
