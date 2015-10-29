@@ -107,13 +107,20 @@ class Flow implements FlowInterface
             $nextStep = $this->getNextStepFromProcessWhenNull($currentStep);
         }
 
+        // Inherit the data from the current step
+        // @TODO: Perhaps make an option out of this so we can decide per step.
+        if (null === $nextStep->getData()) {
+            $nextStep->setData($currentStep->getData());
+        }
+
         if (false === $this->process->getSteps()->containsKey($currentStep->getName()) || false === $this->process->getSteps()->containsKey($nextStep->getName())) {
             return false;
         }
 
-        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_STEP, new ValidateStepEvent($currentStep));
+        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_CURRENT_STEP, new ValidateStepEvent($currentStep));
+        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_NEXT_STEP, new ValidateStepEvent($nextStep));
 
-        return 0 === $currentStep->validate()->count();
+        return 0 === $currentStep->validate()->count() && 0 === $nextStep->validate()->count();
     }
 
     /**
