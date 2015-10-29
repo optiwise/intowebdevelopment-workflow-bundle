@@ -122,9 +122,26 @@ class Flow implements FlowInterface
      * @param   StepInterface   $currentStep
      * @return  \Symfony\Component\Validator\ConstraintViolationListInterface
      */
-    public function getValidationMessages(StepInterface $currentStep = null)
+    public function getValidationList(StepInterface $currentStep = null)
     {
         return $this->getCurrentStepFromProcess($currentStep)->validate();
+    }
+
+    /**
+     * Get all the constraint validation messages.
+     *
+     * @param   StepInterface   $currentStep
+     * @return  array[string]
+     */
+    public function getValidationMessages(StepInterface $currentStep = null)
+    {
+        $errorMessages = array();
+
+        foreach ($this->getValidationList($currentStep) as $validationMessage) {
+            $errorMessages[] = $validationMessage->getMessage();
+        }
+
+        return $errorMessages;
     }
 
     /**
