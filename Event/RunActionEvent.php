@@ -9,15 +9,25 @@ use Symfony\Component\EventDispatcher\Event;
 
 class RunActionEvent extends Event
 {
+    protected $nextStep;
     protected $currentStep;
     protected $action;
     protected $process;
 
-    public function __construct(StepInterface $currentStep, ActionInterface $action, ProcessInterface $process)
+    public function __construct(StepInterface $currentStep, ActionInterface $action, ProcessInterface $process, StepInterface $nextStep = null)
     {
         $this->currentStep = $currentStep;
+        $this->nextStep = $nextStep;
         $this->action = $action;
         $this->process = $process;
+    }
+
+    /**
+     * @return StepInterface
+     */
+    public function getNextStep()
+    {
+        return $this->nextStep;
     }
 
     /**
