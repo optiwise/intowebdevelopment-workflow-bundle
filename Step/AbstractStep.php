@@ -58,6 +58,22 @@ abstract class AbstractStep implements StepInterface
         return 0 !== count($this->getNextSteps());
     }
 
+    /**
+     * Check if the next step with the given name exists exists.
+     *
+     * @param   string  $name
+     * @return  boolean
+     */
+    public function nextStepContains($name)
+    {
+        return count(array_filter($this->getNextSteps(), function($nextStep) use ($name) {
+            /**
+             * @var StepInterface $nextStep
+             */
+            return $nextStep->getName() === $name;
+        })) > 0;
+    }
+
     public function __toString()
     {
         return $this->getName();
