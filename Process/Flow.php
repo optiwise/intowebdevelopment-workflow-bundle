@@ -164,7 +164,10 @@ class Flow implements FlowInterface
             return $currentStep->getNextSteps()[0];
         }
 
-        throw new TooManyStepsPossibleException("It's not possible to automatically determine the next step because there is more than one option to choose from.");
+        throw new TooManyStepsPossibleException(sprintf(
+            "It's not possible to automatically determine the next step because there is more than one option to choose from. Possible options are: %s",
+            implode(",", $currentStep->getNextSteps())
+        ));
     }
 
     /**
