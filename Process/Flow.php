@@ -3,6 +3,7 @@
 namespace IntoWebDevelopment\WorkflowBundle\Process;
 
 use IntoWebDevelopment\WorkflowBundle\Action\ActionInterface;
+use IntoWebDevelopment\WorkflowBundle\Action\ContainerAwareActionInterface;
 use IntoWebDevelopment\WorkflowBundle\Event\RunActionEvent;
 use IntoWebDevelopment\WorkflowBundle\Event\StepEvent;
 use IntoWebDevelopment\WorkflowBundle\Event\ValidateStepEvent;
@@ -10,10 +11,11 @@ use IntoWebDevelopment\WorkflowBundle\Events;
 use IntoWebDevelopment\WorkflowBundle\Exception\NotPossibleToMoveToNextStepException;
 use IntoWebDevelopment\WorkflowBundle\Exception\TooManyStepsPossibleException;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
+use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class Flow implements FlowInterface
+class Flow extends ContainerAware implements FlowInterface
 {
     /**
      * @var ProcessInterface
@@ -79,9 +81,17 @@ class Flow implements FlowInterface
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_ALLOWED_TO_STEP, new StepEvent($currentStep, $nextStep, $this->process));
 
         /**
-         * @var ActionInterface $action
+         * @var ActionInterface|ContainerAwareActionInterface $action
          */
         foreach ($currentStep->getActions() as $action) {
+            /*
+             * @TODO This is the off-side of dealing with actions that really depend on services. Perhaps we can make all dependable actions private services, but that's for later.
+             */
+            if (in_array("ContainerAwareActionInterface", (new \ReflectionClass($action))->getInterfaceNames())) {
+                // Set the service container
+                $action->setContainer($this->container);
+            }
+
             // Dispatch two events, one before the action
             $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_BEFORE_ACTION, new RunActionEvent($currentStep, $action, $this->process, $nextStep));
             // Run action
@@ -114,6 +124,7 @@ class Flow implements FlowInterface
             $nextStep->setData($currentStep->getData());
         }
 
+        // The process does not contain the current and/or the next step. Return false just to be safe.
         if (false === $this->process->getSteps()->containsKey($currentStep->getName()) || false === $this->process->getSteps()->containsKey($nextStep->getName())) {
             return false;
         }

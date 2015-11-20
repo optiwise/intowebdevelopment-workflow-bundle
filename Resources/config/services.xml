@@ -12,6 +12,10 @@
         <service id="intowebdevelopment_workflow.process_flow" class="%intowebdevelopment_workflow.process_flow.class%">
             <argument type="service" id="validator" />
             <argument type="service" id="event_dispatcher" />
+
+            <call method="setContainer">
+                <argument type="service" id="service_container" />
+            </call>
         </service>
     </services>
 

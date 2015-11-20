@@ -18,11 +18,15 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('into_web_development_workflow');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
+        $treeBuilder->root('intowebdev_workflow')
+            ->children()
+                ->arrayNode("validation")
+                    ->children()
+                        ->booleanNode("use_prevalidate_before_steps")->defaultTrue()->end()
+                    ->end()
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }
