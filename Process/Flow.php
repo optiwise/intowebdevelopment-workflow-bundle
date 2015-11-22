@@ -80,29 +80,8 @@ class Flow extends ContainerAware implements FlowInterface
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_ALLOWED_TO_STEP, new StepEvent($currentStep, $nextStep, $this->process));
 
-        /**
-         * @var ActionInterface|ContainerAwareActionInterface $action
-         */
-        foreach ($currentStep->getActions() as $action) {
-            /*
-             * @TODO This is the off-side of dealing with actions that really depend on services. Perhaps we can make all dependable actions private services, but that's for later.
-             */
-            $hasContainerAwareActionInterface = count(array_filter((new \ReflectionClass($action))->getInterfaceNames(), function($value) {
-                return false !== strpos($value, "IntoWebDevelopment") && false !== strpos($value, "ContainerAwareActionInterface");
-            })) === 1;
-
-            if ($hasContainerAwareActionInterface) {
-                // Set the service container
-                $action->setContainer($this->container);
-            }
-
-            // Dispatch two events, one before the action
-            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_BEFORE_ACTION, new RunActionEvent($currentStep, $action, $this->process, $nextStep));
-            // Run action
-            $actionResult = $action->run($currentStep);
-            // And one after the action has ran
-            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_AFTER_ACTION, new RunActionEvent($currentStep, $action, $this->process, $nextStep, $actionResult));
-        }
+        // Execute the step actions that are assigned to the current step.
+        $this->executeStepActions($currentStep, $nextStep);
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process));
     }
@@ -165,6 +144,38 @@ class Flow extends ContainerAware implements FlowInterface
         }
 
         return $errorMessages;
+    }
+
+    /**
+     * @param   StepInterface       $step
+     * @param   StepInterface|null  $nextStep
+     * @return  void
+     */
+    public function executeStepActions(StepInterface $step, StepInterface $nextStep = null)
+    {
+        /**
+         * @var ActionInterface|ContainerAwareActionInterface $action
+         */
+        foreach ($step->getActions() as $action) {
+            /*
+             * @TODO This is the off-side of dealing with actions that really depend on services. Perhaps we can make all dependable actions private services, but that's for later.
+             */
+            $hasContainerAwareActionInterface = count(array_filter((new \ReflectionClass($action))->getInterfaceNames(), function($value) {
+                    return false !== strpos($value, "IntoWebDevelopment") && false !== strpos($value, "ContainerAwareActionInterface");
+                })) === 1;
+
+            if ($hasContainerAwareActionInterface) {
+                // Set the service container
+                $action->setContainer($this->container);
+            }
+
+            // Dispatch two events, one before the action
+            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_BEFORE_ACTION, new RunActionEvent($step, $action, $this->process, $nextStep));
+            // Run action
+            $actionResult = $action->run($step);
+            // And one after the action has ran
+            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_AFTER_ACTION, new RunActionEvent($step, $action, $this->process, $nextStep, $actionResult));
+        }
     }
 
     /**
