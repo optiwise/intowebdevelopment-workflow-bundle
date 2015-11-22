@@ -87,7 +87,11 @@ class Flow extends ContainerAware implements FlowInterface
             /*
              * @TODO This is the off-side of dealing with actions that really depend on services. Perhaps we can make all dependable actions private services, but that's for later.
              */
-            if (in_array("ContainerAwareActionInterface", (new \ReflectionClass($action))->getInterfaceNames())) {
+            $hasContainerAwareActionInterface = count(array_filter((new \ReflectionClass($action))->getInterfaceNames(), function($value) {
+                    return false !== strpos($value, "IntoWebDevelopment") && false !== strpos($value, "ContainerAwareActionInterface");
+                })) === 1;
+
+            if ($hasContainerAwareActionInterface) {
                 // Set the service container
                 $action->setContainer($this->container);
             }
