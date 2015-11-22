@@ -14,13 +14,9 @@
       "IntoWebDevelopment\\Bundle\\WorkflowBundle\\": ""
     }
   },
-  "repositories": [ {
-    "type": "vcs",
-    "url": "git@bitbucket.org:intowebdevelopment/workflowbundle.git"
-  } ],
   "require": {
     "php": ">=5.3.3",
     "symfony/framework-bundle": "~2.7",
-    "doctrine/orm": "~2.2,>=2.2.3,<2.5"
+    "doctrine/orm": "~2.2"
   }
 }
