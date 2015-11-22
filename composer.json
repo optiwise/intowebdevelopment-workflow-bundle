@@ -1,6 +1,7 @@
 {
   "name": "intowebdevelopment/workflow-bundle",
   "type": "symfony-bundle",
+  "description": "An easy way to define your workfows progmatically and makes defining workflows easier than ever. Our bundle supports actions per step and automatic step transitioning.",
   "keywords": ["Symfony2", "Workflow", "WorkflowBundle", "WorkflowEvent", "Event", "EventBased"],
   "license": "MIT",
   "authors": [
@@ -11,12 +12,12 @@
   ],
   "autoload": {
     "psr-4": {
-      "IntoWebDevelopment\\Bundle\\WorkflowBundle\\": ""
+      "IntoWebDevelopment\\WorkflowBundle\\": ""
     }
   },
   "require": {
     "php": ">=5.3.3",
     "symfony/framework-bundle": "~2.7",
-    "doctrine/orm": "~2.2"
+    "doctrine/orm": ">=2.2"
   }
 }
