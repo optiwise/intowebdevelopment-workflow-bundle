@@ -99,9 +99,9 @@ class Flow extends ContainerAware implements FlowInterface
             // Dispatch two events, one before the action
             $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_BEFORE_ACTION, new RunActionEvent($currentStep, $action, $this->process, $nextStep));
             // Run action
-            $action->run($currentStep);
+            $actionResult = $action->run($currentStep);
             // And one after the action has ran
-            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_AFTER_ACTION, new RunActionEvent($currentStep, $action, $this->process, $nextStep));
+            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_AFTER_ACTION, new RunActionEvent($currentStep, $action, $this->process, $nextStep, $actionResult));
         }
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process));
