@@ -10,7 +10,9 @@ use IntoWebDevelopment\WorkflowBundle\Event\ValidateStepEvent;
 use IntoWebDevelopment\WorkflowBundle\Events;
 use IntoWebDevelopment\WorkflowBundle\Exception\NotPossibleToMoveToNextStepException;
 use IntoWebDevelopment\WorkflowBundle\Exception\TooManyStepsPossibleException;
+use IntoWebDevelopment\WorkflowBundle\Step\StepFlagInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
+use IntoWebDevelopment\WorkflowBundle\Util\StepUtil;
 use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -84,6 +86,18 @@ class Flow extends ContainerAware implements FlowInterface
         $this->executeStepActions($currentStep, $nextStep);
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process));
+
+        $automatedNextSteps = (new StepUtil())->getAutomatedSteps($nextStep->getNextSteps());
+
+        // We can only move to the next step when we only have one next step available.
+        if ($nextStep->hasNextSteps() && in_array(StepFlagInterface::FLAG_IS_AUTOMATED, $nextStep->getFlags()) && 1 === count($automatedNextSteps)) {
+            $automatedNextStep = $automatedNextSteps[0];
+
+            if ($this->isPossibleToMoveToNextStep($automatedNextStep)) {
+                // See if it's possible to transition to the next step.
+                $this->moveToNextStep($automatedNextStep, $nextStep);
+            }
+        }
     }
 
     /**

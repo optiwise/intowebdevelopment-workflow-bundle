@@ -26,6 +26,11 @@ interface StepInterface
     public function validate();
 
     /**
+     * @return  array
+     */
+    public function getFlags();
+
+    /**
      * Contains the friendly name of the step.
      *
      * @return  string
