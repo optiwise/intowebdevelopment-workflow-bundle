@@ -9,11 +9,17 @@ abstract class AbstractStep implements StepInterface
     protected $data;
 
     /**
-     * Contains an array of actions.
-     *
-     * @return  array
+     * @inheritdoc
      */
     public function getActions()
+    {
+        return array();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreActions()
     {
         return array();
     }
@@ -49,9 +55,7 @@ abstract class AbstractStep implements StepInterface
     }
 
     /**
-     * Check if there are remaining steps left.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function hasNextSteps()
     {
@@ -61,6 +65,7 @@ abstract class AbstractStep implements StepInterface
     /**
      * Check if the next step with the given name exists exists.
      *
+     * @internal
      * @param   string  $name
      * @return  boolean
      */
@@ -74,6 +79,9 @@ abstract class AbstractStep implements StepInterface
         })) > 0;
     }
 
+    /**
+     * @return string
+     */
     public function __toString()
     {
         return $this->getName();

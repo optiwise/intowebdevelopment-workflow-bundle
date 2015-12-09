@@ -14,7 +14,14 @@ interface StepInterface
     public function getNextSteps();
 
     /**
-     * Contains an array with one or more actions.
+     * Contains an array with one or more actions that will be executed when you transition to this step.
+     *
+     * @return array[ActionInterface]
+     */
+    public function getPreActions();
+
+    /**
+     * Contains an array with one or more actions that will be executed when you transition to the next step.
      *
      * @return  array[ActionInterface]
      */
