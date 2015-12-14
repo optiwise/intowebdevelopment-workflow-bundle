@@ -13,11 +13,11 @@ use IntoWebDevelopment\WorkflowBundle\Exception\TooManyStepsPossibleException;
 use IntoWebDevelopment\WorkflowBundle\Step\StepFlagInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 use IntoWebDevelopment\WorkflowBundle\Util\StepUtil;
-use Symfony\Component\DependencyInjection\ContainerAware;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
-class Flow extends ContainerAware implements FlowInterface
+class Flow implements FlowInterface
 {
     /**
      * @var ProcessInterface
@@ -33,6 +33,8 @@ class Flow extends ContainerAware implements FlowInterface
      * @var EventDispatcherInterface
      */
     protected $eventDispatcher;
+
+    use ContainerAwareTrait;
 
     public function __construct(ValidatorInterface $validator, EventDispatcherInterface $eventDispatcher)
     {
