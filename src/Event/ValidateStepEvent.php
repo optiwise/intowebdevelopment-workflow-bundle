@@ -12,13 +12,24 @@ class ValidateStepEvent extends Event
      */
     protected $step;
 
-    public function __construct(StepInterface $currentStep)
+    /**
+     * @var mixed
+     */
+    protected $user;
+
+    public function __construct(StepInterface $currentStep, $user = null)
     {
         $this->step = $currentStep;
+        $this->user = $user;
     }
 
     public function getStep()
     {
         return $this->step;
+    }
+
+    public function getUser()
+    {
+        return $this->user;
     }
 }

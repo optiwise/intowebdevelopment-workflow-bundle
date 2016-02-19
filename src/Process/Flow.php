@@ -13,9 +13,11 @@ use IntoWebDevelopment\WorkflowBundle\Exception\TooManyStepsPossibleException;
 use IntoWebDevelopment\WorkflowBundle\Step\StepFlagInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 use IntoWebDevelopment\WorkflowBundle\Util\StepUtil;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class Flow implements FlowInterface
 {
@@ -34,12 +36,18 @@ class Flow implements FlowInterface
      */
     protected $eventDispatcher;
 
+    /**
+     * @var TokenStorageInterface
+     */
+    protected $tokenStorage;
+
     use ContainerAwareTrait;
 
-    public function __construct(ValidatorInterface $validator, EventDispatcherInterface $eventDispatcher)
+    public function __construct(ValidatorInterface $validator, EventDispatcherInterface $eventDispatcher, TokenStorageInterface $tokenStorage)
     {
         $this->validator = $validator;
         $this->eventDispatcher = $eventDispatcher;
+        $this->tokenStorage = $tokenStorage;
 
         return $this;
     }
@@ -82,14 +90,14 @@ class Flow implements FlowInterface
             $nextStep = $this->getNextStepFromProcessWhenNull($currentStep);
         }
 
-        $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_ALLOWED_TO_STEP, new StepEvent($currentStep, $nextStep, $this->process));
+        $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_ALLOWED_TO_STEP, new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()));
 
         // Execute the step actions that are assigned to the current step.
         $this->executeStepActions($currentStep, $nextStep);
         // Execute the step actions that need to be executed when entering the new step.
         $this->executeStepActions($nextStep, null, $nextStep->getPreActions());
 
-        $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process));
+        $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()));
 
         $automatedNextSteps = (new StepUtil())->getAutomatedSteps($nextStep->getNextSteps());
 
@@ -130,8 +138,8 @@ class Flow implements FlowInterface
             return false;
         }
 
-        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_CURRENT_STEP, new ValidateStepEvent($currentStep));
-        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_NEXT_STEP, new ValidateStepEvent($nextStep));
+        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_CURRENT_STEP, new ValidateStepEvent($currentStep, $this->getUserIfTokenHasOne()));
+        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_NEXT_STEP, new ValidateStepEvent($nextStep, $this->getUserIfTokenHasOne()));
 
         return 0 === $currentStep->validate()->count() && 0 === $nextStep->validate()->count();
     }
@@ -230,5 +238,17 @@ class Flow implements FlowInterface
         }
 
         return $stepOverride;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getUserIfTokenHasOne()
+    {
+        if (($token = $this->tokenStorage->getToken()) && $token instanceof TokenInterface) {
+            return $token->getUser();
+        }
+
+        return null;
     }
 }

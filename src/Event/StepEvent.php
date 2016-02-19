@@ -11,12 +11,14 @@ class StepEvent extends Event
     protected $currentStep;
     protected $nextStep;
     protected $process;
+    protected $user;
 
-    public function __construct(StepInterface $currentStep, StepInterface $nextStep, ProcessInterface $process)
+    public function __construct(StepInterface $currentStep, StepInterface $nextStep, ProcessInterface $process, $token = null)
     {
         $this->currentStep = $currentStep;
         $this->nextStep = $nextStep;
         $this->process = $process;
+        $this->user = $token;
     }
 
     /**
@@ -41,5 +43,13 @@ class StepEvent extends Event
     public function getProcess()
     {
         return $this->process;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUser()
+    {
+        return $this->user;
     }
 }
