@@ -214,7 +214,7 @@ class Flow implements FlowInterface
      * @return  StepInterface
      * @throws  TooManyStepsPossibleException
      */
-    private function getNextStepFromProcessWhenNull(StepInterface $currentStep)
+    protected function getNextStepFromProcessWhenNull(StepInterface $currentStep)
     {
         if ($currentStep->hasNextSteps() && count($currentStep->getNextSteps()) === 1) {
             // Get the first item of the next steps.
@@ -231,7 +231,7 @@ class Flow implements FlowInterface
      * @param   StepInterface|null $stepOverride
      * @return  StepInterface|null
      */
-    private function getCurrentStepFromProcess(StepInterface $stepOverride = null)
+    protected function getCurrentStepFromProcess(StepInterface $stepOverride = null)
     {
         if ($stepOverride === null) {
             return $this->process->getCurrentStep();
@@ -243,7 +243,7 @@ class Flow implements FlowInterface
     /**
      * @return mixed
      */
-    private function getUserIfTokenHasOne()
+    protected function getUserIfTokenHasOne()
     {
         if (($token = $this->tokenStorage->getToken()) && $token instanceof TokenInterface) {
             return $token->getUser();
