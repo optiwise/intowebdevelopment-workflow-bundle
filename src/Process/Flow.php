@@ -94,8 +94,11 @@ class Flow implements FlowInterface
 
         // Execute the step actions that are assigned to the current step.
         $this->executeStepActions($currentStep, $nextStep);
-        // Execute the step actions that need to be executed when entering the new step.
-        $this->executeStepActions($nextStep, null, $nextStep->getPreActions());
+
+        if (count($nextStep->getPreActions()) > 0) {
+            // Execute the step actions that need to be executed when entering the new step.
+            $this->executeStepActions($nextStep, null, $nextStep->getPreActions());
+        }
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()));
 
