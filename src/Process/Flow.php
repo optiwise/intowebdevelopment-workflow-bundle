@@ -102,10 +102,10 @@ class Flow implements FlowInterface
 
         $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()));
 
-        $automatedNextSteps = (new StepUtil())->getAutomatedSteps($nextStep->getNextSteps());
+        $automatedNextSteps = StepUtil::filterAutomatedSteps($nextStep->getNextSteps());
 
         // We can only move to the next step when we only have one next step available.
-        if ($nextStep->hasNextSteps() && in_array(StepFlagInterface::FLAG_IS_AUTOMATED, $nextStep->getFlags()) && 1 === count($automatedNextSteps)) {
+        if (count($automatedNextSteps) === 1) {
             $automatedNextStep = $automatedNextSteps[0];
 
             if ($this->isPossibleToMoveToNextStep($automatedNextStep)) {
