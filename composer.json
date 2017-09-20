@@ -21,6 +21,6 @@
     "symfony/validator": "~2.7",
     "symfony/event-dispatcher": "~2.7",
     "symfony/security-core": "~2.7",
-    "doctrine/orm": ">=2.2"
+    "doctrine/orm": "~2.2"
   }
 }
