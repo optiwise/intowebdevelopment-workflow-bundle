@@ -6,7 +6,7 @@ use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 
 interface ActionInterface
 {
-    public function run(StepInterface $step);
+    public function run(StepInterface $step): void;
 
-    public function getName();
+    public function getName(): string;
 }

@@ -18,10 +18,10 @@ class StepUtil
     /**
      * Filter out all steps except the automated steps.
      *
-     * @param   array   $steps
-     * @return  array
+     * @param array $steps
+     * @return array
      */
-    public function getAutomatedSteps(array $steps)
+    public function getAutomatedSteps(array $steps): array
     {
         trigger_error("This method has to be replaced with the static method 'filterAutomatedSteps'", E_USER_DEPRECATED);
         return static::filterAutomatedSteps($steps);
@@ -33,10 +33,8 @@ class StepUtil
      * @param array $steps
      * @return array
      */
-    static public function filterAutomatedSteps(array $steps)
+    public static function filterAutomatedSteps(array $steps): array
     {
-        return array_filter($steps, function(StepInterface $step) {
-            return in_array(StepFlagInterface::FLAG_IS_AUTOMATED, $step->getFlags(), true);
-        });
+        return array_filter($steps, static fn(StepInterface $step) => in_array(StepFlagInterface::FLAG_IS_AUTOMATED, $step->getFlags(), true));
     }
 }

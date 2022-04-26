@@ -4,7 +4,7 @@ namespace IntoWebDevelopment\WorkflowBundle\Step;
 
 interface StepFlagInterface
 {
-    const FLAG_IS_HIDDEN = "h";
+    public const FLAG_IS_HIDDEN = "h";
 
-    const FLAG_IS_AUTOMATED = "f";
+    public const FLAG_IS_AUTOMATED = "f";
 }

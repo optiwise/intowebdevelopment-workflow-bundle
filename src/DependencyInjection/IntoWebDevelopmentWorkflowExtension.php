@@ -4,7 +4,7 @@ namespace IntoWebDevelopment\WorkflowBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 
 /**
@@ -16,6 +16,8 @@ class IntoWebDevelopmentWorkflowExtension extends Extension
 {
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     public function load(array $configs, ContainerBuilder $container)
     {

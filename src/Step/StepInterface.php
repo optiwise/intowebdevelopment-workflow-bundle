@@ -2,6 +2,7 @@
 
 namespace IntoWebDevelopment\WorkflowBundle\Step;
 
+use IntoWebDevelopment\WorkflowBundle\Action\ActionInterface;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 interface StepInterface
@@ -9,61 +10,62 @@ interface StepInterface
     /**
      * Returns a collection of possible next steps.
      *
-     * @return  array[StepInterface]
+     * @return  StepInterface[]
      */
-    public function getNextSteps();
+    public function getNextSteps(): array;
 
     /**
      * Contains an array with one or more actions that will be executed when you transition to this step.
      *
-     * @return array[ActionInterface]
+     * @return ActionInterface[]
      */
-    public function getPreActions();
+    public function getPreActions(): array;
 
     /**
      * Contains an array with one or more actions that will be executed when you transition to the next step.
      *
-     * @return  array[ActionInterface]
+     * @return  array<ActionInterface>
+     * @psalm-return list<ActionInterface>
      */
-    public function getActions();
+    public function getActions(): array;
 
     /**
      * @return  ConstraintViolationListInterface
      */
-    public function validate();
+    public function validate(): ConstraintViolationListInterface;
 
     /**
      * @return  array
      */
-    public function getFlags();
+    public function getFlags(): array;
 
     /**
      * Contains the friendly name of the step.
      *
      * @return  string
      */
-    public function getLabel();
+    public function getLabel(): string;
 
     /**
      * @return  mixed
      */
-    public function getData();
+    public function getData(): mixed;
 
     /**
-     * @param   mixed   $stepData
+     * @param   mixed   $data
      * @return  $this
      */
-    public function setData($stepData);
+    public function setData(mixed $data): static;
 
     /**
      * An unique identifier for this workflow step.
      *
      * @return  string
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * @return  bool
      */
-    public function hasNextSteps();
+    public function hasNextSteps(): bool;
 }

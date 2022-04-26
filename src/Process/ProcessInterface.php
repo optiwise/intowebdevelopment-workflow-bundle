@@ -2,6 +2,9 @@
 
 namespace IntoWebDevelopment\WorkflowBundle\Process;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use IntoWebDevelopment\WorkflowBundle\Exception\CurrentStepNotFoundInStepCollectionException;
+use IntoWebDevelopment\WorkflowBundle\Exception\StepCollectionIsEmptyException;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 
 interface ProcessInterface
@@ -10,35 +13,35 @@ interface ProcessInterface
      * Get all available steps for this process. The order in which the steps are added
      * is irrelevant.
      *
-     * @return  \Doctrine\Common\Collections\ArrayCollection[StepInterface]
+     * @return  ArrayCollection
      */
-    public function getSteps();
+    public function getSteps(): ArrayCollection;
 
     /**
      * @return  StepInterface
      */
-    public function getStartStep();
+    public function getStartStep(): StepInterface;
 
     /**
-     * @return  array[StepInterface]
+     * @return  StepInterface[]
      */
-    public function getEndSteps();
+    public function getEndSteps(): array;
 
     /**
      * @return  null|StepInterface
      */
-    public function getCurrentStep();
+    public function getCurrentStep(): ?StepInterface;
 
     /**
      * @param   string|StepInterface    $currentStepNameOrObject
      * @param   mixed                   $data
-     * @throws  \IntoWebDevelopment\WorkflowBundle\Exception\CurrentStepNotFoundInStepCollectionException
-     * @throws  \IntoWebDevelopment\WorkflowBundle\Exception\StepCollectionIsEmptyException
+     * @throws  CurrentStepNotFoundInStepCollectionException
+     * @throws  StepCollectionIsEmptyException
      */
-    public function setCurrentStep($currentStepNameOrObject, $data = null);
+    public function setCurrentStep(string|StepInterface $currentStepNameOrObject, mixed $data = null): void;
 
     /**
      * @return  string
      */
-    public function getName();
+    public function getName(): string;
 }

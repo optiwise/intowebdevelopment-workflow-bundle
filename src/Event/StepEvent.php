@@ -4,51 +4,31 @@ namespace IntoWebDevelopment\WorkflowBundle\Event;
 
 use IntoWebDevelopment\WorkflowBundle\Process\ProcessInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class StepEvent extends Event
 {
-    protected $currentStep;
-    protected $nextStep;
-    protected $process;
-    protected $user;
-
-    public function __construct(StepInterface $currentStep, StepInterface $nextStep, ProcessInterface $process, $token = null)
+    public function __construct(private StepInterface $currentStep, private StepInterface $nextStep, private ProcessInterface $process, private ?UserInterface $user = null)
     {
-        $this->currentStep = $currentStep;
-        $this->nextStep = $nextStep;
-        $this->process = $process;
-        $this->user = $token;
     }
 
-    /**
-     * @return StepInterface
-     */
-    public function getCurrentStep()
+    public function getCurrentStep(): StepInterface
     {
         return $this->currentStep;
     }
 
-    /**
-     * @return StepInterface
-     */
-    public function getNextStep()
+    public function getNextStep(): StepInterface
     {
         return $this->nextStep;
     }
 
-    /**
-     * @return ProcessInterface
-     */
-    public function getProcess()
+    public function getProcess(): ProcessInterface
     {
         return $this->process;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getUser()
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }

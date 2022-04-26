@@ -6,5 +6,5 @@ use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 
 interface ValidateWorkflowStepEvent
 {
-    public function validate(StepInterface $workflowStep);
+    public function validate(StepInterface $workflowStep): void;
 }

@@ -3,32 +3,21 @@
 namespace IntoWebDevelopment\WorkflowBundle\Event;
 
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class ValidateStepEvent extends Event
 {
-    /**
-     * @var StepInterface
-     */
-    protected $step;
-
-    /**
-     * @var mixed
-     */
-    protected $user;
-
-    public function __construct(StepInterface $currentStep, $user = null)
+    public function __construct(private StepInterface $step, private ?UserInterface $user = null)
     {
-        $this->step = $currentStep;
-        $this->user = $user;
     }
 
-    public function getStep()
+    public function getStep(): StepInterface
     {
         return $this->step;
     }
 
-    public function getUser()
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }

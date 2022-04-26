@@ -10,20 +10,13 @@ use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 
 abstract class AbstractProcess implements ProcessInterface
 {
-    /**
-     * @var ArrayCollection
-     */
-    protected $stepCollection;
+    protected ArrayCollection $stepCollection;
 
-    /**
-     * @var StepInterface
-     */
-    protected $currentStep;
+    protected ?StepInterface $currentStep;
 
     public function __construct()
     {
         $this->stepCollection = new ArrayCollection();
-        return $this;
     }
 
     /**
@@ -32,13 +25,13 @@ abstract class AbstractProcess implements ProcessInterface
      * @throws  CurrentStepNotFoundInStepCollectionException
      * @throws  StepCollectionIsEmptyException
      */
-    public function setCurrentStep($currentStepNameOrObject, $data = null)
+    public function setCurrentStep(string|StepInterface $currentStepNameOrObject, mixed $data = null): void
     {
         if (0 === $this->stepCollection->count()) {
             throw new StepCollectionIsEmptyException("We did not find any steps. Please make sure the stepCollection is filled.");
         }
 
-        if (is_object($currentStepNameOrObject) && $currentStepNameOrObject instanceof StepInterface) {
+        if ($currentStepNameOrObject instanceof StepInterface) {
             if (false === $this->stepCollection->containsKey($currentStepNameOrObject->getName())) {
                 throw $this->throwCurrentStepNotFoundException($currentStepNameOrObject->getName());
             }
@@ -52,19 +45,19 @@ abstract class AbstractProcess implements ProcessInterface
         }
 
         $this->currentStep = $this->stepCollection->get($currentStepNameOrObject);
+        if ($this->currentStep === null) {
+            throw new \InvalidArgumentException('The current step is null.');
+        }
+
         $this->currentStep->setData($data);
     }
 
     /**
      * @return  StepInterface|null
      */
-    public function getCurrentStep()
+    public function getCurrentStep(): ?StepInterface
     {
-        if (null === $this->currentStep) {
-            return $this->getStartStep();
-        }
-
-        return $this->currentStep;
+        return $this->currentStep ?? $this->getStartStep();
     }
 
     /**
@@ -73,20 +66,24 @@ abstract class AbstractProcess implements ProcessInterface
      * @throws  StepNotFoundInStepCollectionException
      * @return  StepInterface
      */
-    public function getStepInstanceByName($name)
+    public function getStepInstanceByName(string $name): StepInterface
     {
         if (0 === $this->stepCollection->count()) {
             throw new StepCollectionIsEmptyException("We did not find any steps. Please make sure the stepCollection is filled.");
         }
 
         if ($this->stepCollection->containsKey($name)) {
-            return $this->stepCollection->get($name);
+            if ($step = $this->stepCollection->get($name)) {
+                return $step;
+            }
+
+            throw new \InvalidArgumentException(sprintf('The step with the name %s is null.', $name));
         }
 
         throw new StepNotFoundInStepCollectionException(sprintf("The given step '%s' is not known in the step collection.", $name));
     }
 
-    private function throwCurrentStepNotFoundException($currentStepName)
+    private function throwCurrentStepNotFoundException(string $currentStepName): CurrentStepNotFoundInStepCollectionException
     {
         return new CurrentStepNotFoundInStepCollectionException(sprintf("The given current step '%s' is not known in the current step collection.", $currentStepName));
     }

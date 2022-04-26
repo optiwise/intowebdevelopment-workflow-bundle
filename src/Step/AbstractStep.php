@@ -4,30 +4,30 @@ namespace IntoWebDevelopment\WorkflowBundle\Step;
 
 use Symfony\Component\Validator\ConstraintViolationList;
 
-abstract class AbstractStep implements StepInterface
+abstract class AbstractStep implements StepInterface, \Stringable
 {
-    protected $data;
+    protected mixed $data;
 
     /**
      * @inheritdoc
      */
-    public function getActions()
+    public function getActions(): array
     {
-        return array();
+        return [];
     }
 
     /**
      * @inheritdoc
      */
-    public function getPreActions()
+    public function getPreActions(): array
     {
-        return array();
+        return [];
     }
 
     /**
      * @return ConstraintViolationList
      */
-    public function validate()
+    public function validate(): ConstraintViolationList
     {
         return new ConstraintViolationList();
     }
@@ -37,7 +37,7 @@ abstract class AbstractStep implements StepInterface
      *
      * @return mixed
      */
-    public function getData()
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -48,7 +48,7 @@ abstract class AbstractStep implements StepInterface
      * @param mixed $data
      * @return $this
      */
-    public function setData($data)
+    public function setData(mixed $data): static
     {
         $this->data = $data;
         return $this;
@@ -57,7 +57,7 @@ abstract class AbstractStep implements StepInterface
     /**
      * @inheritdoc
      */
-    public function hasNextSteps()
+    public function hasNextSteps(): bool
     {
         return 0 !== count($this->getNextSteps());
     }
@@ -69,20 +69,15 @@ abstract class AbstractStep implements StepInterface
      * @param   string  $name
      * @return  boolean
      */
-    public function nextStepContains($name)
+    public function nextStepContains(string $name): bool
     {
-        return count(array_filter($this->getNextSteps(), function($nextStep) use ($name) {
-            /**
-             * @var StepInterface $nextStep
-             */
-            return $nextStep->getName() === $name;
-        })) > 0;
+        return count(array_filter($this->getNextSteps(), static fn(StepInterface $nextStep) => $nextStep->getName() === $name)) > 0;
     }
 
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getName();
     }

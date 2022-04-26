@@ -4,15 +4,15 @@ namespace IntoWebDevelopment\WorkflowBundle\Exception;
 
 class TransitionFailedException extends \Exception
 {
-    protected $validationMessages;
+    protected array $validationMessages;
 
-    public function setValidationMessages(array $validationMessages)
+    public function setValidationMessages(array $validationMessages): static
     {
         $this->validationMessages = $validationMessages;
         return $this;
     }
 
-    public function getValidationMessages()
+    public function getValidationMessages(): array
     {
         return $this->validationMessages;
     }

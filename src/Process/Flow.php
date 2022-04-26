@@ -10,62 +10,33 @@ use IntoWebDevelopment\WorkflowBundle\Event\ValidateStepEvent;
 use IntoWebDevelopment\WorkflowBundle\Events;
 use IntoWebDevelopment\WorkflowBundle\Exception\NotPossibleToMoveToNextStepException;
 use IntoWebDevelopment\WorkflowBundle\Exception\TooManyStepsPossibleException;
-use IntoWebDevelopment\WorkflowBundle\Step\StepFlagInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 use IntoWebDevelopment\WorkflowBundle\Util\StepUtil;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class Flow implements FlowInterface
 {
-    /**
-     * @var ProcessInterface
-     */
-    protected $process;
-
-    /**
-     * @var ValidatorInterface
-     */
-    protected $validator;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
-
-    /**
-     * @var TokenStorageInterface
-     */
-    protected $tokenStorage;
+    protected ProcessInterface $process;
 
     use ContainerAwareTrait;
 
-    public function __construct(ValidatorInterface $validator, EventDispatcherInterface $eventDispatcher, TokenStorageInterface $tokenStorage)
+    public function __construct(protected ValidatorInterface $validator, protected EventDispatcherInterface $eventDispatcher, protected TokenStorageInterface $tokenStorage)
     {
-        $this->validator = $validator;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->tokenStorage = $tokenStorage;
-
-        return $this;
     }
 
-    /**
-     * @param ProcessInterface $process
-     * @return $this
-     */
-    public function setProcess(ProcessInterface $process)
+    public function setProcess(ProcessInterface $process): static
     {
         $this->process = $process;
         return $this;
     }
 
-    /**
-     * @return ProcessInterface
-     */
-    public function getProcess()
+    public function getProcess(): ProcessInterface
     {
         return $this->process;
     }
@@ -75,9 +46,9 @@ class Flow implements FlowInterface
      *
      * @param   StepInterface|null          $nextStep
      * @param   StepInterface|null          $currentStep
-     * @throws  NotPossibleToMoveToNextStepException
+     * @throws  NotPossibleToMoveToNextStepException|TooManyStepsPossibleException
      */
-    public function moveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null)
+    public function moveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null): void
     {
         $currentStep = $this->getCurrentStepFromProcess($currentStep);
 
@@ -87,20 +58,28 @@ class Flow implements FlowInterface
 
         // When the next step is not given try to determine the next possible step.
         if (null === $nextStep) {
+            if (null === $currentStep) {
+                throw new \InvalidArgumentException('The current step must be given when no next step is given.');
+            }
+
             $nextStep = $this->getNextStepFromProcessWhenNull($currentStep);
         }
 
-        $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_ALLOWED_TO_STEP, new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()));
+        if (null === $currentStep) {
+            throw new \InvalidArgumentException('The current step cannot be null at this point.');
+        }
+
+        $this->eventDispatcher->dispatch(new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()), Events::PROCESS_FLOW_ALLOWED_TO_STEP);
 
         // Execute the step actions that are assigned to the current step.
         $this->executeStepActions($currentStep, $nextStep);
 
         if (count($nextStep->getPreActions()) > 0) {
             // Execute the step actions that need to be executed when entering the new step.
-            $this->executeStepActions($nextStep, null, $nextStep->getPreActions());
+            $this->executeStepActions($nextStep, null, ... $nextStep->getPreActions());
         }
 
-        $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_STEPPING_COMPLETED, new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()));
+        $this->eventDispatcher->dispatch(new StepEvent($currentStep, $nextStep, $this->process, $this->getUserIfTokenHasOne()), Events::PROCESS_FLOW_STEPPING_COMPLETED);
 
         $automatedNextSteps = StepUtil::filterAutomatedSteps($nextStep->getNextSteps());
 
@@ -121,17 +100,24 @@ class Flow implements FlowInterface
      * @throws  TooManyStepsPossibleException
      * @return  bool
      */
-    public function isPossibleToMoveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null)
+    public function isPossibleToMoveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null): bool
     {
         $currentStep = $this->getCurrentStepFromProcess($currentStep);
 
         // When the next step is not given try to determine the next possible step.
         if (null === $nextStep) {
+            if (null === $currentStep) {
+                throw new \InvalidArgumentException('The current step must be given when no next step is given.');
+            }
+
             $nextStep = $this->getNextStepFromProcessWhenNull($currentStep);
         }
 
+        if ($currentStep === null) {
+            throw new \InvalidArgumentException('The current step must be given.');
+        }
+
         // Inherit the data from the current step
-        // @TODO: Perhaps make an option out of this so we can decide per step.
         if (null === $nextStep->getData()) {
             $nextStep->setData($currentStep->getData());
         }
@@ -141,32 +127,34 @@ class Flow implements FlowInterface
             return false;
         }
 
-        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_CURRENT_STEP, new ValidateStepEvent($currentStep, $this->getUserIfTokenHasOne()));
-        $this->eventDispatcher->dispatch(Events::BEFORE_VALIDATE_NEXT_STEP, new ValidateStepEvent($nextStep, $this->getUserIfTokenHasOne()));
+        $this->eventDispatcher->dispatch(new ValidateStepEvent($currentStep, $this->getUserIfTokenHasOne()), Events::BEFORE_VALIDATE_CURRENT_STEP);
+        $this->eventDispatcher->dispatch(new ValidateStepEvent($nextStep, $this->getUserIfTokenHasOne()), Events::BEFORE_VALIDATE_NEXT_STEP);
 
         return 0 === $currentStep->validate()->count() && 0 === $nextStep->validate()->count();
     }
 
     /**
      * Get all the constraint validation messages.
-     *
-     * @param   StepInterface   $currentStep
-     * @return  \Symfony\Component\Validator\ConstraintViolationListInterface
      */
-    public function getValidationList(StepInterface $currentStep = null)
+    public function getValidationList(StepInterface $currentStep = null): ConstraintViolationListInterface
     {
-        return $this->getCurrentStepFromProcess($currentStep)->validate();
+        $current = $this->getCurrentStepFromProcess($currentStep);
+
+        if ($current === null) {
+            throw new \InvalidArgumentException('The current step must be given when there is no current step set.');
+        }
+
+        return $current->validate();
     }
 
     /**
      * Get all the constraint validation messages.
      *
-     * @param   StepInterface   $currentStep
-     * @return  array[string]
+     * @psalm-return list<\Stringable|string>
      */
-    public function getValidationMessages(StepInterface $currentStep = null)
+    public function getValidationMessages(StepInterface $currentStep = null): array
     {
-        $errorMessages = array();
+        $errorMessages = [];
 
         foreach ($this->getValidationList($currentStep) as $validationMessage) {
             $errorMessages[] = $validationMessage->getMessage();
@@ -175,22 +163,14 @@ class Flow implements FlowInterface
         return $errorMessages;
     }
 
-    /**
-     * @param   StepInterface           $step
-     * @param   StepInterface|null      $nextStep
-     * @param   array[ActionInterface]  $stepActionArray
-     * @return  void
-     */
-    public function executeStepActions(StepInterface $step, StepInterface $nextStep = null, array $stepActionArray = array())
+    public function executeStepActions(StepInterface $step, StepInterface $nextStep = null, ActionInterface... $stepActionArray): void
     {
-        if (0 === count($stepActionArray)) {
-            $stepActionArray = $step->getActions();
-        }
+        $actions = 0 === count($stepActionArray) ? $step->getActions() : $stepActionArray;
 
         /**
          * @var ActionInterface|ContainerAwareActionInterface $action
          */
-        foreach ($stepActionArray as $action) {
+        foreach ($actions as $action) {
             /*
              * @TODO This is the off-side of dealing with actions that really depend on services. Perhaps we can make all dependable actions private services, but that's for later.
              */
@@ -200,20 +180,20 @@ class Flow implements FlowInterface
             }
 
             // Dispatch two events, one before the action
-            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_BEFORE_ACTION, new RunActionEvent($step, $action, $this->process, $nextStep));
+            $this->eventDispatcher->dispatch(new RunActionEvent($step, $action, $this->process, $nextStep), Events::PROCESS_FLOW_BEFORE_ACTION);
             // Run action
             $actionResult = $action->run($step);
-            // And one after the action has ran
-            $this->eventDispatcher->dispatch(Events::PROCESS_FLOW_AFTER_ACTION, new RunActionEvent($step, $action, $this->process, $nextStep, $actionResult));
+            // And one after the action has run
+            $this->eventDispatcher->dispatch(new RunActionEvent($step, $action, $this->process, $nextStep, $actionResult), Events::PROCESS_FLOW_AFTER_ACTION);
         }
     }
 
     /**
-     * @param   StepInterface $currentStep
-     * @return  StepInterface
-     * @throws  TooManyStepsPossibleException
+     * @param StepInterface $currentStep
+     * @return StepInterface
+     * @throws TooManyStepsPossibleException
      */
-    protected function getNextStepFromProcessWhenNull(StepInterface $currentStep)
+    protected function getNextStepFromProcessWhenNull(StepInterface $currentStep): StepInterface
     {
         if ($currentStep->hasNextSteps() && count($currentStep->getNextSteps()) === 1) {
             // Get the first item of the next steps.
@@ -226,23 +206,12 @@ class Flow implements FlowInterface
         ));
     }
 
-    /**
-     * @param   StepInterface|null $stepOverride
-     * @return  StepInterface|null
-     */
-    protected function getCurrentStepFromProcess(StepInterface $stepOverride = null)
+    protected function getCurrentStepFromProcess(StepInterface $stepOverride = null): ?StepInterface
     {
-        if ($stepOverride === null) {
-            return $this->process->getCurrentStep();
-        }
-
-        return $stepOverride;
+        return $stepOverride ?? $this->process->getCurrentStep();
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getUserIfTokenHasOne()
+    protected function getUserIfTokenHasOne(): ?UserInterface
     {
         if (($token = $this->tokenStorage->getToken()) && $token instanceof TokenInterface) {
             return $token->getUser();

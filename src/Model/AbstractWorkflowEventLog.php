@@ -2,7 +2,6 @@
 
 namespace IntoWebDevelopment\WorkflowBundle\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use IntoWebDevelopment\WorkflowBundle\Process\ProcessInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
@@ -11,62 +10,56 @@ use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
  * @ORM\Table()
  * @ORM\Entity
  */
-abstract class AbstractWorkflowEventLog
+abstract class AbstractWorkflowEventLog implements \Serializable
 {
-    protected $id;
+    protected mixed $id;
 
     /**
      * @ORM\Column(name="process", type="string", nullable=false)
-     *
-     * @var ProcessInterface
      */
-    protected $process;
+    protected string $process;
 
     /**
      * @ORM\Column(name="step", type="string", nullable=false)
      *
      * @var StepInterface
      */
-    protected $step;
+    protected StepInterface $step;
 
     /**
      * @ORM\Column(name="event_date", type="datetime", nullable=false)
      *
      * @var \DateTime
      */
-    protected $eventDate;
+    protected \DateTime $eventDate;
 
     /**
      * @ORM\OneToOne(targetEntity="IntoWebDevelopment\WorkflowBundle\Model\AbstractWorkflowEventLog")
      * @ORM\JoinColumn(nullable=true)
-     *
-     * @var StepInterface
      */
-    protected $previous;
+    protected ?AbstractWorkflowEventLog $previous;
 
     /**
      * @ORM\Column(name="next_step", type="string", nullable=true)
      *
      * @var StepInterface
      */
-    protected $nextStep;
+    protected StepInterface $nextStep;
 
     public function __construct()
     {
         $this->eventDate = new \DateTime();
-
-        return $this;
     }
 
     /**
      * @return mixed
      */
-    public function getId()
+    public function getId(): mixed
     {
         return $this->id;
     }
 
-    public function serialize()
+    public function serialize(): string
     {
         return serialize(array(
             $this->id,
@@ -76,57 +69,36 @@ abstract class AbstractWorkflowEventLog
         ));
     }
 
-    public function unserialize($serialized)
+    public function unserialize(string $data): void
     {
-        $data = unserialize($serialized);
+        $decoded = unserialize($data, [ 'allowed_classes' => [ __CLASS__ ] ]);
 
-        list(
-            $this->id,
-            $this->process,
-            $this->step,
-            $this->eventDate
-        ) = $data;
+        [$this->id, $this->process, $this->step, $this->eventDate] = $decoded;
     }
 
-    /**
-     * @return string
-     */
-    public function getProcess()
+    public function getProcess(): string
     {
-        return $this->process->getName();
+        return $this->process;
     }
 
-    /**
-     * @param ProcessInterface $process
-     * @return $this
-     */
-    public function setProcess($process)
+    public function setProcess(ProcessInterface $process): static
     {
         $this->process = $process->getName();
+
         return $this;
     }
 
-    /**
-     * @return \DateTime
-     */
-    public function getEventDate()
+    public function getEventDate(): \DateTime
     {
         return $this->eventDate;
     }
 
-    /**
-     * @return StepInterface
-     */
-    public function getNextStep()
+    public function getNextStep(): StepInterface
     {
         return $this->nextStep;
     }
 
-    /**
-     * @param StepInterface $nextStep
-     * @return $this
-     */
-    public function setNextStep(StepInterface $nextStep)
+    public function setNextStep(StepInterface $nextStep): static
     {
         $this->setPrevious($this);
         $this->nextStep = $nextStep;
@@ -134,29 +106,19 @@ abstract class AbstractWorkflowEventLog
         return $this;
     }
 
-    /**
-     * @param AbstractWorkflowEventLog $previous
-     * @return $this
-     */
-    public function setPrevious(AbstractWorkflowEventLog $previous = null)
+    public function setPrevious(?AbstractWorkflowEventLog $previous = null): static
     {
         $this->previous = $previous;
+
         return $this;
     }
 
-    /**
-     * @return StepInterface
-     */
-    public function getStep()
+    public function getStep(): StepInterface
     {
         return $this->step;
     }
 
-    /**
-     * @param StepInterface $step
-     * @return $this
-     */
-    public function setStep($step)
+    public function setStep(StepInterface $step): static
     {
         $this->step = $step;
 

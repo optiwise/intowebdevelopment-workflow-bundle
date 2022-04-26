@@ -2,7 +2,9 @@
 
 namespace IntoWebDevelopment\WorkflowBundle\Action;
 
+use Psr\Container\ContainerInterface;
+
 interface ContainerAwareActionInterface extends ActionInterface
 {
-    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container);
+    public function setContainer(ContainerInterface $container): void;
 }

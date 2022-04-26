@@ -1,7 +1,7 @@
 {
   "name": "intowebdevelopment/workflow-bundle",
   "type": "symfony-bundle",
-  "description": "An easy way to define your workfows progmatically and makes defining workflows easier than ever. Our bundle supports actions per step and automatic step transitioning.",
+  "description": "An easy way to define your workfows programmatically and makes defining workflows easier than ever. Our bundle supports actions per step and automatic step transitioning.",
   "keywords": ["Symfony2", "Workflow", "WorkflowBundle", "WorkflowEvent", "Event", "EventBased"],
   "license": "MIT",
   "authors": [
@@ -15,12 +15,22 @@
       "IntoWebDevelopment\\WorkflowBundle\\": "src"
     }
   },
+  "suggest": {
+    "doctrine/orm": "*"
+  },
   "require": {
-    "php": ">=5.3.3",
-    "symfony/dependency-injection": "~2.7",
-    "symfony/validator": "~2.7",
-    "symfony/event-dispatcher": "~2.7",
-    "symfony/security-core": "~2.7",
-    "doctrine/orm": "~2.2"
+    "php": "8.0.*|8.1.*",
+    "symfony/dependency-injection": "~6.0",
+    "symfony/validator": "~6.0",
+    "symfony/config": "^6.0",
+    "symfony/http-kernel": "^6.0",
+    "symfony/event-dispatcher-contracts": "^3.0",
+    "doctrine/collections": "^1.6",
+    "symfony/security-core": "^6.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "rector/rector": "^0.12.21",
+    "vimeo/psalm": "^4.22"
   }
 }

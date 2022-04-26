@@ -5,70 +5,45 @@ namespace IntoWebDevelopment\WorkflowBundle\Event;
 use IntoWebDevelopment\WorkflowBundle\Action\ActionInterface;
 use IntoWebDevelopment\WorkflowBundle\Process\ProcessInterface;
 use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class RunActionEvent extends Event
 {
-    protected $nextStep;
-    protected $currentStep;
-    protected $action;
-    protected $process;
-    protected $actionResult;
-
-    public function __construct(StepInterface $currentStep, ActionInterface $action, ProcessInterface $process, StepInterface $nextStep = null, $actionResult = null)
-    {
-        $this->currentStep = $currentStep;
-        $this->nextStep = $nextStep;
-        $this->action = $action;
-        $this->process = $process;
-        $this->actionResult = $actionResult;
+    public function __construct(
+        private StepInterface $currentStep,
+        private ActionInterface $action,
+        private ProcessInterface $process,
+        private ?StepInterface $nextStep,
+        private mixed $actionResult = null
+    ) {
     }
 
-    /**
-     * @return StepInterface
-     */
-    public function getNextStep()
+    public function getNextStep(): ?StepInterface
     {
         return $this->nextStep;
     }
 
-    /**
-     * @return StepInterface
-     */
-    public function getCurrentStep()
+    public function getCurrentStep(): StepInterface
     {
         return $this->currentStep;
     }
 
-    /**
-     * @return ProcessInterface
-     */
-    public function getProcess()
+    public function getProcess(): ProcessInterface
     {
         return $this->process;
     }
 
-    /**
-     * @return ActionInterface
-     */
-    public function getAction()
+    public function getAction(): ActionInterface
     {
         return $this->action;
     }
 
-    /**
-     * @return null
-     */
-    public function getActionResult()
+    public function getActionResult(): mixed
     {
         return $this->actionResult;
     }
 
-    /**
-     * @param mixed $actionResult
-     * @return RunActionEvent
-     */
-    public function setActionResult($actionResult)
+    public function setActionResult(mixed $actionResult): static
     {
         $this->actionResult = $actionResult;
         return $this;

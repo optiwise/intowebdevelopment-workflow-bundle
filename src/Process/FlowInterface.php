@@ -6,26 +6,18 @@ use IntoWebDevelopment\WorkflowBundle\Step\StepInterface;
 
 interface FlowInterface
 {
-    public function moveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null);
+    public function moveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null): void;
 
-    public function isPossibleToMoveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null);
+    public function isPossibleToMoveToNextStep(StepInterface $nextStep = null, StepInterface $currentStep = null): bool;
 
-    /**
-     * @param ProcessInterface $process
-     * @return $this
-     */
-    public function setProcess(ProcessInterface $process);
+    public function setProcess(ProcessInterface $process): static;
 
-    /**
-     * @return ProcessInterface
-     */
-    public function getProcess();
+    public function getProcess(): ProcessInterface;
 
     /**
      * Get all the constraint validation messages.
      *
-     * @param   StepInterface   $currentStep
-     * @return  \Symfony\Component\Validator\ConstraintViolationListInterface
+     * @psalm-return list<\Stringable|string>
      */
-    public function getValidationMessages(StepInterface $currentStep = null);
+    public function getValidationMessages(StepInterface $currentStep = null): array;
 }
