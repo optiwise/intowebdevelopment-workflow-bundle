@@ -68,4 +68,9 @@ interface StepInterface
      * @return  bool
      */
     public function hasNextSteps(): bool;
+
+    /**
+     * @return string
+     */
+    public function __toString(): string;
 }
