@@ -6,7 +6,7 @@ use Symfony\Component\Validator\ConstraintViolationList;
 
 abstract class AbstractStep implements StepInterface, \Stringable
 {
-    protected mixed $data;
+    protected mixed $data = null;
 
     /**
      * @inheritdoc
